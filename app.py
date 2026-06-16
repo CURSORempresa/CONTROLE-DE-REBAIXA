@@ -237,7 +237,7 @@ except Exception as e:
 def index():
     """Página principal."""
     try:
-        return render_template('index.html')
+        return send_from_directory('.', 'index.html')
     except Exception as e:
         return f"Erro ao renderizar template: {str(e)}", 500
 

@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Controle de Rebaixas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+            25% { transform: translateY(-15px) translateX(5px) scale(1.1); }
+            50% { transform: translateY(-10px) translateX(-5px) scale(1); }
+            75% { transform: translateY(-5px) translateX(3px) scale(1.05); }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5), 0 0 10px rgba(59, 130, 246, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.5); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .animate-fadeIn { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-glow { animation: glow 2s ease-in-out infinite; }
+        .animate-pulse { animation: pulse 2s ease-in-out infinite; }
+        .animate-slideIn { animation: slideIn 0.3s ease-out forwards; }
+        .animate-gradient {
+            background-size: 200% 200%;
+            animation: gradient 3s ease infinite;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 1rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+        .glass-card:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(59, 130, 246, 0.6);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.4), 0 0 40px rgba(59, 130, 246, 0.2);
+        }
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.8), rgba(147, 51, 234, 0.8));
+            border-radius: 50%;
+            animation: float 8s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 40px rgba(147, 51, 234, 0.6);
+        }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .badge:hover { transform: scale(1.15); }
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(180deg, #3b82f6, #1e40af);
+            border-radius: 5px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(180deg, #2563eb, #1e3a8a);
+        }
+        .btn-modern {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4), 0 0 20px rgba(59, 130, 246, 0.2);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-modern:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1e3a8a 100%);
+            box-shadow: 0 6px 25px rgba(59, 130, 246, 0.6), 0 0 40px rgba(59, 130, 246, 0.4);
+            transform: translateY(-3px) scale(1.05);
+        }
+        .input-modern {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .input-modern:focus {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(59, 130, 246, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3), 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Partículas de Fundo -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <header class="bg-slate-900/90 backdrop-blur-xl border-b border-blue-500/30 sticky top-0 z-50 shadow-2xl shadow-blue-500/10">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center animate-pulse shadow-lg shadow-blue-500/30">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-clip-text text-transparent animate-gradient">
+                        Controle de Rebaixas
+                    </h1>
+                </div>
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <button onclick="exportarDados()" class="btn-modern text-white px-4 py-2 rounded-lg font-semibold">
+                        <span class="hidden md:inline">💾 Backup</span>
+                        <span class="md:hidden">💾</span>
+                    </button>
+                    <button onclick="importarDados()" class="btn-modern text-white px-4 py-2 rounded-lg font-semibold">
+                        <span class="hidden md:inline">📂 Restaurar</span>
+                        <span class="md:hidden">📂</span>
+                    </button>
+                    <button onclick="abrirModalNovaRebaixa()" class="btn-modern text-white px-4 py-2 rounded-lg font-semibold animate-glow">
+                        <span class="hidden md:inline">+ Nova Rebaixa</span>
+                        <span class="md:hidden">+</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8 relative z-10">
+        <!-- Filters -->
+        <div class="glass-card p-4 md:p-6 mb-6 animate-fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Data Início</label>
+                    <input type="date" id="filtroDataInicio" class="w-full input-modern rounded-lg px-4 py-2 text-white placeholder-slate-400">
+                </div>
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Data Fim</label>
+                    <input type="date" id="filtroDataFim" class="w-full input-modern rounded-lg px-4 py-2 text-white placeholder-slate-400">
+                </div>
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Buscar</label>
+                    <input type="text" id="filtroBusca" placeholder="Nome ou observação..." class="w-full input-modern rounded-lg px-4 py-2 text-white placeholder-slate-400">
+                </div>
+                <div class="flex items-end space-x-2">
+                    <button onclick="filtrarRebaixas()" class="flex-1 btn-modern text-white px-4 py-2 rounded-lg font-semibold">
+                        Filtrar
+                    </button>
+                    <button onclick="limparFiltros()" class="btn-modern text-white px-4 py-2 rounded-lg font-semibold">
+                        Limpar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="glass-card p-6 animate-fadeIn">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-300 text-sm font-medium">Total de Rebaixas</p>
+                        <p id="totalRebaixas" class="text-3xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-slate-700 rounded-full flex items-center justify-center animate-pulse">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card p-6 animate-fadeIn" style="animation-delay: 0.1s">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-300 text-sm font-medium">Total de Itens Ativos</p>
+                        <p id="totalItens" class="text-3xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-slate-700 rounded-full flex items-center justify-center animate-pulse">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="glass-card p-6 animate-fadeIn" style="animation-delay: 0.2s">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-blue-300 text-sm font-medium">Lojas com Produtos Ativos</p>
+                        <p id="totalLojas" class="text-3xl font-bold text-white mt-1">0</p>
+                    </div>
+                    <div class="w-12 h-12 bg-gradient-to-r from-blue-600 to-slate-700 rounded-full flex items-center justify-center animate-pulse">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rebaixas List -->
+        <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl border border-blue-500/20 shadow-xl overflow-hidden">
+            <div class="p-4 md:p-6 border-b border-blue-500/20">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Rebaixas
+                </h2>
+            </div>
+            <div id="rebaixasList" class="divide-y divide-slate-500/20">
+                <!-- Rebaixas serão carregadas aqui -->
+            </div>
+        </div>
+
+        <!-- Produtos que Vencem Hoje -->
+        <div class="bg-slate-800/50 backdrop-blur-lg rounded-2xl border border-blue-500/20 shadow-xl overflow-hidden mt-6">
+            <div class="p-4 md:p-6 border-b border-blue-500/20">
+                <h2 class="text-xl font-bold text-white flex items-center">
+                    <svg class="w-6 h-6 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Produtos que Vencem Hoje
+                </h2>
+            </div>
+            <div class="p-4 md:p-6" id="produtosVencemHoje">
+                <!-- Produtos serão carregados aqui -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal Nova Rebaixa -->
+    <div id="modalNovaRebaixa" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl transform transition-all duration-300 scale-95 opacity-0" id="modalNovaRebaixaContent">
+            <div class="p-6 border-b border-blue-500/20">
+                <h3 class="text-xl font-bold text-white">Nova Rebaixa</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Título da Rebaixa</label>
+                    <input type="text" id="novaRebaixaNome" placeholder="Ex: Rebaixa Semanal 15/06" class="w-full input-modern rounded-lg px-4 py-2 text-white placeholder-slate-400">
+                </div>
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Responsável</label>
+                    <input type="text" id="novaRebaixaResponsavel" placeholder="Nome de quem fez a rebaixa" class="w-full input-modern rounded-lg px-4 py-2 text-white placeholder-slate-400">
+                </div>
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Status</label>
+                    <select id="novaRebaixaStatus" class="w-full input-modern rounded-lg px-4 py-2 text-white">
+                        <option value="programada">Programada</option>
+                        <option value="programando">Programando</option>
+                        <option value="nao_programada">Não Programada</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-slate-300 text-sm font-medium mb-2">Cole os dados da rebaixa</label>
+                    <textarea id="novaRebaixaDados" rows="12" placeholder="Cole as colunas do Excel aqui (cada linha é um produto, separado por tabulação)&#10;Exemplo:&#10;29&#9;379812&#9;CAFE SOL.JUAN VALDEZ VD 95G CHOCOLATE&#9;2&#9;01/07/2026&#9;71,94&#10;29&#9;336914&#9;MAC.NATIVE TALHARIM ORG.400G TRADICIONAL&#9;2&#9;24/06/2026&#9;12,34" class="w-full input-modern rounded-lg px-4 py-2 text-white placeholder-slate-400 resize-none font-mono text-sm"></textarea>
+                </div>
+                <div class="bg-slate-700/50 rounded-lg p-4 border border-blue-500/20">
+                    <p class="text-slate-300 text-sm font-medium mb-2">Ordem das colunas (separado por tabulação):</p>
+                    <pre class="text-xs text-slate-300 overflow-x-auto">Loja | Código de Produto | Descrição do Produto | Qtd a Vencer | Data de Validade | Preço para Rebaixa</pre>
+                </div>
+            </div>
+            <div class="p-6 border-t border-blue-500/20 flex justify-end space-x-3">
+                <button onclick="fecharModalNovaRebaixa()" class="btn-modern text-white px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+                <button onclick="criarRebaixa()" class="btn-modern text-white px-4 py-2 rounded-lg font-semibold animate-glow">Criar e Importar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Detalhes -->
+    <div id="modalDetalhes" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 scale-95 opacity-0" id="modalDetalhesContent">
+            <div class="p-6 border-b border-blue-500/20 sticky top-0 bg-slate-800 z-10">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xl font-bold text-white" id="detalhesTitulo">Detalhes da Rebaixa</h3>
+                    <button onclick="fecharModalDetalhes()" class="text-slate-400 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6" id="detalhesConteudo">
+                <!-- Conteúdo será carregado aqui -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Input para importar JSON -->
+    <input type="file" id="importarJsonInput" accept=".json" style="display: none" onchange="processarImportacaoJson(event)">
+
+    <script>
+        // Controle de Rebaixas - Versão com API Flask
+        
+        // Configure a URL da API aqui (deixe vazio para usar a URL atual)
+        const API_BASE_URL = window.location.origin + '/api';
+        // Para usar uma URL específica, descomente a linha abaixo e substitua pela URL:
+        // const API_BASE_URL = 'https://seu-render-url.onrender.com/api';
+        
+        let rebaixas = [];
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM carregado, iniciando...');
+            criarParticulas();
+            console.log('Partículas criadas');
+            // Carregar dados da API
+            carregarDados();
+        });
+
+        // Criar partículas de fundo
+        function criarParticulas() {
+            const particlesContainer = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Carregar dados da API Flask
+        async function carregarDados() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/rebaixas`);
+                if (!response.ok) throw new Error('Erro ao carregar dados');
+                
+                const data = await response.json();
+                rebaixas = data;
+                console.log('Dados carregados da API:', rebaixas.length, 'rebaixas');
+                
+                renderizarRebaixas();
+                atualizarEstatisticas();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                // Fallback para localStorage
+                try {
+                    const dadosLocalStorage = localStorage.getItem('rebaixas');
+                    rebaixas = dadosLocalStorage ? JSON.parse(dadosLocalStorage) : [];
+                    console.log('Dados carregados do localStorage:', rebaixas.length, 'rebaixas');
+                    renderizarRebaixas();
+                    atualizarEstatisticas();
+                    mostrarNotificacao('Usando localStorage (API indisponível)', 'aviso');
+                } catch (e) {
+                    console.error('Erro ao carregar do localStorage:', e);
+                    rebaixas = [];
+                    renderizarRebaixas();
+                    atualizarEstatisticas();
+                }
+            }
+        }
+
+        // Salvar dados no localStorage
+        function salvarDadosLocalStorage() {
+            localStorage.setItem('rebaixas', JSON.stringify(rebaixas));
+        }
+
+        // Renderizar rebaixas
+        function renderizarRebaixas() {
+            const container = document.getElementById('rebaixasList');
+            
+            if (rebaixas.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center">
+                        <div class="w-16 h-16 mx-auto mb-4 bg-slate-700/50 rounded-full flex items-center justify-center">
+                            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                        </div>
+                        <p class="text-slate-400">Nenhuma rebaixa encontrada</p>
+                        <p class="text-slate-500 text-sm mt-2">Clique em "+ Nova Rebaixa" para começar</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = rebaixas.map((rebaixa, index) => `
+                <div class="glass-card p-4 md:p-6 cursor-pointer animate-fadeIn" style="animation-delay: ${index * 0.05}s" onclick="verDetalhes(${rebaixa.id})">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-semibold text-white">${rebaixa.nome}</h3>
+                                <span class="badge bg-gradient-to-r from-blue-600 to-blue-700 text-white">${rebaixa.quantidade_itens} itens</span>
+                                <span class="badge ${getStatusColor(rebaixa.status)} text-white">${getStatusLabel(rebaixa.status)}</span>
+                            </div>
+                            <div class="flex flex-wrap gap-4 text-sm text-slate-400">
+                                <span class="flex items-center gap-1">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    ${formatarData(rebaixa.data_criacao)}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select onchange="event.stopPropagation(); alterarStatus(${rebaixa.id}, this.value)" class="input-modern rounded-lg px-2 py-1 text-white text-sm" onclick="event.stopPropagation()">
+                                <option value="programada" ${rebaixa.status === 'programada' ? 'selected' : ''}>Programada</option>
+                                <option value="programando" ${rebaixa.status === 'programando' ? 'selected' : ''}>Programando</option>
+                                <option value="nao_programada" ${rebaixa.status === 'nao_programada' ? 'selected' : ''}>Não Programada</option>
+                            </select>
+                            <button onclick="event.stopPropagation(); verDetalhes(${rebaixa.id})" class="p-2 bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 rounded-lg transition-all duration-300 hover:scale-110" title="Ver Detalhes">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                            </button>
+                            <button onclick="event.stopPropagation(); deletarRebaixa(${rebaixa.id})" class="p-2 bg-red-500/20 hover:bg-red-500/40 text-red-400 rounded-lg transition-all duration-300 hover:scale-110" title="Excluir">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1 1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Atualizar estatísticas
+        function atualizarEstatisticas() {
+            const totalRebaixas = rebaixas.length;
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            let totalItensAtivos = 0;
+            const lojasAtivas = new Set();
+            
+            rebaixas.forEach(r => {
+                if (r.itens) {
+                    r.itens.forEach(i => {
+                        // Verificar se o item ainda não venceu (validade >= hoje)
+                        if (i.data_validade_produto && i.data_validade_produto !== 'VAZIO') {
+                            const dataValidade = parseDataBrasileira(i.data_validade_produto);
+                            if (dataValidade) {
+                                dataValidade.setHours(0, 0, 0, 0);
+                                // Conta se validade for maior ou igual a hoje
+                                if (dataValidade.getTime() >= hoje.getTime()) {
+                                    totalItensAtivos += i.quantidade;
+                                    // Adiciona loja apenas se tiver produto não vencido
+                                    lojasAtivas.add(i.loja);
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            
+            document.getElementById('totalRebaixas').textContent = totalRebaixas;
+            document.getElementById('totalItens').textContent = totalItensAtivos;
+            document.getElementById('totalLojas').textContent = lojasAtivas.size || 0;
+            
+            // Atualizar produtos que vencem hoje
+            atualizarProdutosVencemHoje();
+        }
+
+        // Parsear data brasileira (dd/mm/aaaa)
+        function parseDataBrasileira(dataStr) {
+            if (!dataStr || dataStr === 'VAZIO') return null;
+            
+            // Remover espaços extras
+            dataStr = dataStr.trim();
+            
+            const partes = dataStr.split('/');
+            if (partes.length !== 3) return null;
+            
+            const dia = parseInt(partes[0]);
+            const mes = parseInt(partes[1]) - 1; // Mês em JS é 0-11
+            const ano = parseInt(partes[2]);
+            
+            if (isNaN(dia) || isNaN(mes) || isNaN(ano)) return null;
+            if (dia < 1 || dia > 31) return null;
+            if (mes < 0 || mes > 11) return null;
+            if (ano < 1900 || ano > 2100) return null;
+            
+            const data = new Date(ano, mes, dia);
+            
+            // Verificar se a data é válida
+            if (isNaN(data.getTime())) return null;
+            
+            return data;
+        }
+
+        // Atualizar produtos que vencem hoje
+        function atualizarProdutosVencemHoje() {
+            const hoje = new Date();
+            hoje.setHours(0, 0, 0, 0);
+            
+            const produtosVencemHoje = [];
+            
+            rebaixas.forEach(r => {
+                if (r.itens) {
+                    r.itens.forEach(i => {
+                        if (i.data_validade_produto && i.data_validade_produto !== 'VAZIO') {
+                            const dataValidade = parseDataBrasileira(i.data_validade_produto);
+                            if (dataValidade) {
+                                dataValidade.setHours(0, 0, 0, 0);
+                                if (dataValidade.getTime() === hoje.getTime()) {
+                                    produtosVencemHoje.push({
+                                        ...i,
+                                        nome_rebaixa: r.nome,
+                                        responsavel: r.responsavel
+                                    });
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            
+            const container = document.getElementById('produtosVencemHoje');
+            if (!container) return;
+            
+            if (produtosVencemHoje.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-sm">Nenhum produto vence hoje.</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-blue-300 border-b border-blue-500/20">
+                                <th class="pb-2 pr-4">Loja</th>
+                                <th class="pb-2 pr-4">Código</th>
+                                <th class="pb-2 pr-4">Descrição</th>
+                                <th class="pb-2 pr-4">Qtd</th>
+                                <th class="pb-2 pr-4">Preço</th>
+                                <th class="pb-2 pr-4">Rebaixa</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${produtosVencemHoje.map(item => `
+                                <tr class="border-b border-blue-500/10 hover:bg-slate-600/30 transition-colors">
+                                    <td class="py-2 pr-4 text-white">${item.loja}</td>
+                                    <td class="py-2 pr-4 text-white">${item.codigo_produto}</td>
+                                    <td class="py-2 pr-4 text-white">${item.descricao || '-'}</td>
+                                    <td class="py-2 pr-4 text-white">${item.quantidade}</td>
+                                    <td class="py-2 pr-4 text-white">R$ ${item.preco_rebaixa?.toFixed(2) || '0.00'}</td>
+                                    <td class="py-2 pr-4 text-white">${item.nome_rebaixa}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        // Filtrar rebaixas
+        async function filtrarRebaixas() {
+            const dataInicio = document.getElementById('filtroDataInicio').value;
+            const dataFim = document.getElementById('filtroDataFim').value;
+            const busca = document.getElementById('filtroBusca').value.toLowerCase();
+            
+            try {
+                let query = supabase.from('rebaixas').select('*').order('data_criacao', { ascending: false });
+                
+                if (dataInicio) {
+                    query = query.gte('data_criacao', dataInicio);
+                }
+                if (dataFim) {
+                    query = query.lte('data_criacao', dataFim);
+                }
+                if (busca) {
+                    query = query.or(`nome.ilike.%${busca}%,responsavel.ilike.%${busca}%`);
+                }
+                
+                const { data, error } = await query;
+                
+                if (error) throw error;
+                
+                rebaixas = data || [];
+                renderizarRebaixas();
+                mostrarNotificacao(`${rebaixas.length} rebaixa(s) encontrada(s)`, 'sucesso');
+            } catch (error) {
+                console.error('Erro ao filtrar rebaixas:', error);
+                mostrarNotificacao('Erro ao filtrar rebaixas no Supabase', 'erro');
+            }
+        }
+
+        // Limpar filtros
+        function limparFiltros() {
+            document.getElementById('filtroDataInicio').value = '';
+            document.getElementById('filtroDataFim').value = '';
+            document.getElementById('filtroBusca').value = '';
+            carregarDados();
+        }
+
+        // Modal Nova Rebaixa
+        function abrirModalNovaRebaixa() {
+            console.log('Abrindo modal Nova Rebaixa...');
+            const modal = document.getElementById('modalNovaRebaixa');
+            const content = document.getElementById('modalNovaRebaixaContent');
+            
+            if (!modal) {
+                console.error('Modal não encontrado');
+                mostrarNotificacao('Erro ao abrir modal', 'erro');
+                return;
+            }
+            
+            if (!content) {
+                console.error('Content do modal não encontrado');
+                mostrarNotificacao('Erro ao abrir modal', 'erro');
+                return;
+            }
+            
+            console.log('Modal encontrado, removendo classes...');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                console.log('Removendo classes de animação...');
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+                console.log('Modal aberto com sucesso');
+            }, 10);
+        }
+
+        function fecharModalNovaRebaixa() {
+            const modal = document.getElementById('modalNovaRebaixa');
+            const content = document.getElementById('modalNovaRebaixaContent');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        // Criar rebaixa
+        async function criarRebaixa() {
+            const nome = document.getElementById('novaRebaixaNome').value;
+            const responsavel = document.getElementById('novaRebaixaResponsavel').value;
+            const status = document.getElementById('novaRebaixaStatus').value;
+            const dados = document.getElementById('novaRebaixaDados').value;
+            
+            if (!nome) {
+                mostrarNotificacao('Digite o título da rebaixa', 'erro');
+                return;
+            }
+            
+            if (!dados.trim()) {
+                mostrarNotificacao('Cole os dados da rebaixa', 'erro');
+                return;
+            }
+            
+            // Processar os dados e criar itens
+            const linhas = dados.trim().split('\n');
+            const itens = [];
+            let itensProcessados = 0;
+            
+            for (const linha of linhas) {
+                // Tentar separar por tabulação (Excel)
+                let partes = linha.split('\t');
+                
+                // Se não tiver tabulação, tentar separar por múltiplos espaços
+                if (partes.length < 2) {
+                    partes = linha.trim().split(/\s{2,}/);
+                }
+                
+                // Se ainda não tiver separação suficiente, tentar por vírgula
+                if (partes.length < 2) {
+                    partes = linha.trim().split(',');
+                }
+                
+                // Preencher partes faltantes com strings vazias
+                while (partes.length < 6) {
+                    partes.push('');
+                }
+                
+                // Pegar apenas as 6 primeiras colunas
+                partes = partes.slice(0, 6);
+                
+                try {
+                    const loja = partes[0].trim() || 'VAZIO';
+                    const codigo = partes[1].trim() || 'VAZIO';
+                    const descricao = partes[2].trim() || 'VAZIO';
+                    const quantidadeStr = partes[3].trim() || '0';
+                    const quantidade = parseInt(quantidadeStr) || 0;
+                    const dataValidade = partes[4].trim() || 'VAZIO';
+                    const precoStr = partes[5].trim() || '0';
+                    const preco = parseFloat(precoStr.replace(',', '.')) || 0;
+                    
+                    itens.push({
+                        id: Date.now() + itensProcessados,
+                        loja,
+                        codigo_produto: codigo,
+                        descricao,
+                        quantidade,
+                        preco_rebaixa: preco,
+                        data_validade_produto: dataValidade
+                    });
+                    
+                    itensProcessados++;
+                } catch (e) {
+                    continue;
+                }
+            }
+            
+            if (itens.length === 0) {
+                mostrarNotificacao('Nenhum item válido encontrado. Verifique o formato dos dados.', 'erro');
+                return;
+            }
+            
+            const novaRebaixa = {
+                nome,
+                responsavel: responsavel || 'Não informado',
+                status: status || 'programada',
+                data_criacao: new Date().toISOString(),
+                data_atualizacao: new Date().toISOString(),
+                quantidade_itens: itens.length,
+                itens
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/rebaixas`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(novaRebaixa)
+                });
+                
+                if (!response.ok) throw new Error('Erro ao criar rebaixa');
+                
+                mostrarNotificacao(`Rebaixa criada com ${itens.length} itens!`, 'sucesso');
+                fecharModalNovaRebaixa();
+                limparFormularioNovaRebaixa();
+                await carregarDados();
+            } catch (error) {
+                console.error('Erro ao criar rebaixa:', error);
+                // Fallback para localStorage
+                try {
+                    novaRebaixa.id = Date.now();
+                    rebaixas.unshift(novaRebaixa);
+                    salvarDadosLocalStorage();
+                    mostrarNotificacao(`Rebaixa criada com ${itens.length} itens! (localStorage)`, 'sucesso');
+                    fecharModalNovaRebaixa();
+                    limparFormularioNovaRebaixa();
+                    await carregarDados();
+                } catch (e) {
+                    console.error('Erro ao salvar no localStorage:', e);
+                    mostrarNotificacao('Erro ao criar rebaixa', 'erro');
+                }
+            }
+        }
+
+        function limparFormularioNovaRebaixa() {
+            document.getElementById('novaRebaixaNome').value = '';
+            document.getElementById('novaRebaixaResponsavel').value = '';
+            document.getElementById('novaRebaixaStatus').value = 'programada';
+            document.getElementById('novaRebaixaDados').value = '';
+        }
+
+        // Obter cor do status
+        function getStatusColor(status) {
+            switch(status) {
+                case 'programada':
+                    return 'bg-gradient-to-r from-green-500 to-green-600';
+                case 'programando':
+                    return 'bg-gradient-to-r from-orange-500 to-orange-600';
+                case 'nao_programada':
+                    return 'bg-gradient-to-r from-red-500 to-red-600';
+                default:
+                    return 'bg-gradient-to-r from-slate-500 to-slate-600';
+            }
+        }
+
+        // Obter label do status
+        function getStatusLabel(status) {
+            switch(status) {
+                case 'programada':
+                    return 'Programada';
+                case 'programando':
+                    return 'Programando';
+                case 'nao_programada':
+                    return 'Não Programada';
+                default:
+                    return 'Pendente';
+            }
+        }
+
+        // Alterar status da rebaixa
+        async function alterarStatus(rebaixaId, novoStatus) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/rebaixas/${rebaixaId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: novoStatus,
+                        data_atualizacao: new Date().toISOString()
+                    })
+                });
+                
+                if (!response.ok) throw new Error('Erro ao alterar status');
+                
+                mostrarNotificacao('Status alterado com sucesso!', 'sucesso');
+                await carregarDados();
+            } catch (error) {
+                console.error('Erro ao alterar status:', error);
+                // Fallback para localStorage
+                try {
+                    const rebaixa = rebaixas.find(r => r.id === rebaixaId);
+                    if (rebaixa) {
+                        rebaixa.status = novoStatus;
+                        rebaixa.data_atualizacao = new Date().toISOString();
+                        salvarDadosLocalStorage();
+                        mostrarNotificacao('Status alterado com sucesso! (localStorage)', 'sucesso');
+                        await carregarDados();
+                    }
+                } catch (e) {
+                    console.error('Erro ao alterar status no localStorage:', e);
+                    mostrarNotificacao('Erro ao alterar status', 'erro');
+                }
+            }
+        }
+
+        // Ver detalhes
+        function verDetalhes(rebaixaId) {
+            const rebaixa = rebaixas.find(r => r.id === rebaixaId);
+            if (!rebaixa) return;
+            
+            renderizarDetalhes(rebaixa);
+            abrirModalDetalhes();
+        }
+
+        function renderizarDetalhes(rebaixa) {
+            const itens = rebaixa.itens || [];
+            
+            document.getElementById('detalhesTitulo').textContent = rebaixa.nome;
+            
+            const conteudo = document.getElementById('detalhesConteudo');
+            conteudo.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <p class="text-slate-300 text-sm font-medium">Quantidade de Itens</p>
+                        <p class="text-white text-lg">${rebaixa.quantidade_itens}</p>
+                    </div>
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <p class="text-slate-300 text-sm font-medium">Responsável</p>
+                        <p class="text-white text-lg">${rebaixa.responsavel || 'Não informado'}</p>
+                    </div>
+                    <div class="bg-slate-700/50 rounded-lg p-4">
+                        <p class="text-slate-300 text-sm font-medium">Data Criação</p>
+                        <p class="text-white text-lg">${formatarData(rebaixa.data_criacao)}</p>
+                    </div>
+                </div>
+                
+                <div class="bg-slate-700/50 rounded-lg p-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h4 class="text-lg font-semibold text-white">Itens (${itens.length})</h4>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="filtroCodigo" placeholder="Filtrar por código..." class="bg-slate-600/50 border border-slate-500/30 rounded-lg px-3 py-1 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" onkeyup="filtrarItensPorCodigo()">
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-slate-300 border-b border-slate-500/20">
+                                    <th class="pb-2 pr-4">Loja</th>
+                                    <th class="pb-2 pr-4">Código</th>
+                                    <th class="pb-2 pr-4">Descrição</th>
+                                    <th class="pb-2 pr-4">Qtd a Vencer</th>
+                                    <th class="pb-2 pr-4">Preço Rebaixa</th>
+                                    <th class="pb-2 pr-4">Data Validade</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabelaItens">
+                                ${itens.map(item => `
+                                    <tr class="border-b border-slate-500/10 hover:bg-slate-600/30 transition-colors" data-codigo="${item.codigo_produto.toLowerCase()}">
+                                        <td class="py-2 pr-4 text-white">${item.loja}</td>
+                                        <td class="py-2 pr-4 text-white">${item.codigo_produto}</td>
+                                        <td class="py-2 pr-4 text-white">${item.descricao || '-'}</td>
+                                        <td class="py-2 pr-4 text-white">${item.quantidade}</td>
+                                        <td class="py-2 pr-4 text-white">R$ ${item.preco_rebaixa?.toFixed(2) || '0.00'}</td>
+                                        <td class="py-2 pr-4 text-white">${formatarData(item.data_validade_produto)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        function filtrarItensPorCodigo() {
+            const filtro = document.getElementById('filtroCodigo').value.toLowerCase();
+            const linhas = document.querySelectorAll('#tabelaItens tr');
+            
+            linhas.forEach(linha => {
+                const codigo = linha.getAttribute('data-codigo') || '';
+                if (codigo.includes(filtro)) {
+                    linha.style.display = '';
+                } else {
+                    linha.style.display = 'none';
+                }
+            });
+        }
+
+        function abrirModalDetalhes() {
+            const modal = document.getElementById('modalDetalhes');
+            const content = document.getElementById('modalDetalhesContent');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        function fecharModalDetalhes() {
+            const modal = document.getElementById('modalDetalhes');
+            const content = document.getElementById('modalDetalhesContent');
+            
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        // Deletar rebaixa
+        async function deletarRebaixa(rebaixaId) {
+            if (!confirm('Tem certeza que deseja excluir esta rebaixa?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/rebaixas/${rebaixaId}`, {
+                    method: 'DELETE'
+                });
+                
+                if (!response.ok) throw new Error('Erro ao deletar rebaixa');
+                
+                mostrarNotificacao('Rebaixa excluída com sucesso!', 'sucesso');
+                await carregarDados();
+            } catch (error) {
+                console.error('Erro ao deletar rebaixa:', error);
+                // Fallback para localStorage
+                try {
+                    rebaixas = rebaixas.filter(r => r.id !== rebaixaId);
+                    salvarDadosLocalStorage();
+                    mostrarNotificacao('Rebaixa excluída com sucesso! (localStorage)', 'sucesso');
+                    await carregarDados();
+                } catch (e) {
+                    console.error('Erro ao deletar no localStorage:', e);
+                    mostrarNotificacao('Erro ao deletar rebaixa', 'erro');
+                }
+            }
+        }
+
+        // Exportar dados
+        function exportarDados() {
+            const dados = JSON.stringify(rebaixas, null, 2);
+            const blob = new Blob([dados], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `controle_rebaixas_backup_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            mostrarNotificacao('Backup exportado com sucesso!', 'sucesso');
+        }
+
+        // Importar dados
+        function importarDados() {
+            document.getElementById('importarJsonInput').click();
+        }
+
+        function processarImportacaoJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if (Array.isArray(dados)) {
+                        rebaixas = dados;
+                        salvarDados();
+                        renderizarRebaixas();
+                        atualizarEstatisticas();
+                        mostrarNotificacao('Dados restaurados com sucesso!', 'sucesso');
+                    } else {
+                        mostrarNotificacao('Formato de arquivo inválido', 'erro');
+                    }
+                } catch (error) {
+                    mostrarNotificacao('Erro ao processar arquivo', 'erro');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        // Utilitários
+        function formatarData(dataStr) {
+            if (!dataStr) return '-';
+            const data = new Date(dataStr);
+            return data.toLocaleDateString('pt-BR');
+        }
+
+        function mostrarNotificacao(mensagem, tipo) {
+            const notificacao = document.createElement('div');
+            notificacao.className = `fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 ${
+                tipo === 'sucesso' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+            }`;
+            notificacao.textContent = mensagem;
+            document.body.appendChild(notificacao);
+            
+            setTimeout(() => {
+                notificacao.style.opacity = '0';
+                notificacao.style.transform = 'translateX(100%)';
+                notificacao.style.transition = 'all 0.3s ease';
+                setTimeout(() => notificacao.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
